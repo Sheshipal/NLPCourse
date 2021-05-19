@@ -6,6 +6,9 @@ from nltk.corpus import twitter_samples
 import re
 import string
 
+# if twitter_samples file is not downloaded
+# nltk.download("twitter_samples")
+
 tokenizer = TweetTokenizer(preserve_case=False,
                             strip_handles=True,
                             reduce_len=True)
