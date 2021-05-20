@@ -24,6 +24,13 @@ punctuation = string.punctuation
 stemmer = PorterStemmer()
 
 def clean_tweet(tweets):
+    """
+    Clean Tweet.
+    Input:
+        tweets: list of tweets
+    Output:
+        stemmed_tweet_list: list of stemmed tweets
+    """
     stemmed_tweet_list = list()
     for tweet in tweets:
         # cleaning the retweet words 'RT'
@@ -50,11 +57,21 @@ def clean_tweet(tweets):
     return stemmed_tweet_list
 
 def create_frequencies(cleaned_positive_tweets, cleaned_negative_tweets):
+    """
+    Creates Frequencies.
+    Input:
+        cleaned_positive_tweets: list of cleaned positive tweets
+        cleaned_negative_tweets: list of cleaned negative tweets
+    Output:
+        frequencies: default dictionary with frequency of words
+    """
+    #create a defaultdict variable
     frequencies = defaultdict(lambda:0)
-    label = 1
+
+    #creating frequencies for all positive and negative tweets
     for tweet in cleaned_positive_tweets:
         for word in tweet:
-                frequencies[(word,1)] += 1
+            frequencies[(word,1)] += 1
     label = 0
     for tweet in cleaned_negative_tweets:
         for word in tweet:
@@ -63,8 +80,19 @@ def create_frequencies(cleaned_positive_tweets, cleaned_negative_tweets):
     return frequencies
 
 def create_vectors(frequencies, cleaned_positive_tweets, cleaned_negative_tweets):
+    """
+    Creates Vectors.
+    Input:
+        frequencies: default dictionary of frequency of words
+        cleaned_positive_tweets: list of cleaned positive tweets
+        cleaned_negative_tweets: list of cleaned negative tweets
+    Output:
+        data: list containing vectors
+    """
     m = len(cleaned_positive_tweets) + len(cleaned_negative_tweets)
     data = []
+    
+    #generating the vectors for each tweet
     for tweet in cleaned_positive_tweets:
         positive_count = 0
         negative_count = 0
