@@ -4,6 +4,9 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import twitter_samples
+import matplotlib.pyplot as plt
+import numpy as np
+from collections import defaultdict
 import re
 import string
 
@@ -43,22 +46,19 @@ def clean_tweet(tweets):
             stemmed_tweet.append(stem_word)
 
         stemmed_tweet_list.append(stemmed_tweet)
+    
+    return stemmed_tweet_list
 
 def create_frequencies(cleaned_positive_tweets, cleaned_negative_tweets):
-    frequencies = {}
+    frequencies = defaultdict(lambda:0)
+    label = 1
     for tweet in cleaned_positive_tweets:
         for word in tweet:
-            if (word,1) in frequencies.keys:
                 frequencies[(word,1)] += 1
-            else:
-                frequencies[(word,1)] = 1
-
+    label = 0
     for tweet in cleaned_negative_tweets:
-        for (word,0) in tweet:
-            if word in frequencies.keys:
-                frequencies[(word,0)] += 1
-            else:
-                frequencies[(word,0)] = 1
+        for word in tweet:
+            frequencies[(word,0)] += 1
     
     return frequencies
 
@@ -86,24 +86,42 @@ def create_vectors(frequencies, cleaned_positive_tweets, cleaned_negative_tweets
 if __name__ == "__main__":
     all_positive_tweets = twitter_samples.strings("positive_tweets.json")
     all_negative_tweets = twitter_samples.strings("negative_tweets.json")
+    print("length of all positive tweets : " ,len(all_positive_tweets))
+    print("length of all negative tweets : " ,len(all_negative_tweets))
 
     cleaned_positive_tweets = clean_tweet(all_positive_tweets)
     cleaned_negative_tweets = clean_tweet(all_negative_tweets)
-
+    print("length of cleaned positive tweets : " ,len(cleaned_positive_tweets))
+    print("length of cleaned negative tweets : " ,len(cleaned_negative_tweets))
+    
     frequencies = create_frequencies(cleaned_positive_tweets, cleaned_negative_tweets)
+    print("length of frequencies : ",len(frequencies))
 
     data = create_vectors(frequencies, cleaned_positive_tweets, cleaned_negative_tweets)
 
-     
-    print("length of cleaned positive tweets : ",len(cleaned_positive_tweets))
-    print("length of cleaned negative tweets : ",len(cleaned_negative_tweets))
-    print("a positive tweet : ",cleaned_positive_tweets[381])
-    print("a negative tweet : ",cleaned_negative_tweets[381])
+    for vector in data[:5]:
+        print(vector[:-1])
+    for vector in data[-5:]:
+        print(vector[:-1])
 
+    keys = ['happi', 'merri', 'nice', 'good', 'bad', 'sad', 'mad', 'best', 'pretti',
+        '❤', ':)', ':(', '😒', '😬', '😄', '😍', '♛',
+        'song', 'idea', 'power', 'play', 'magnific']
 
+    x = []
+    y = []
+    fig, ax = plt.subplots(figsize = (8, 8))
+    x = np.log([frequencies[(key,1)] for key in keys])
+    y = np.log([frequencies[(key,0)] for key in keys])
 
+    for i in range(len(keys)):
+        ax.annotate(keys[i], (x[i],y[i]), fontsize=12)
 
-def extract_feature(stemmed_tweet):
-    for word in stemmed_tweet:
-        pass
-    pass
+    plt.xlabel("Log Positive count")
+    plt.ylabel("Log Negative count")
+
+    ax.plot([0, 9], [0, 9], color = 'red')
+
+    ax.scatter(x, y)
+
+    plt.show()
