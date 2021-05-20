@@ -108,7 +108,7 @@ def create_vectors(frequencies, cleaned_positive_tweets, cleaned_negative_tweets
             positive_count += frequencies[(word,1)]
             negative_count += frequencies[(word,0)]
         data.append([1,positive_count,negative_count,0])
-
+    
     return data
 
 if __name__ == "__main__":
