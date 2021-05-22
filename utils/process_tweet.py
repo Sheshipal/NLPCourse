@@ -1,4 +1,3 @@
-import nltk
 import numpy as np
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -6,22 +5,13 @@ from nltk.tokenize import TweetTokenizer
 from nltk.corpus import twitter_samples
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from collections import defaultdict
 import re
 import string
 
 # if twitter_samples file is not downloaded
 # nltk.download("twitter_samples")
-
-tokenizer = TweetTokenizer(preserve_case=False,
-                            strip_handles=True,
-                            reduce_len=True)
-
-stopwords_english = stopwords.words("english")
-
-punctuation = string.punctuation
-
-stemmer = PorterStemmer()
 
 def clean_tweet(tweets):
     """
@@ -31,6 +21,17 @@ def clean_tweet(tweets):
     Output:
         stemmed_tweet_list: list of stemmed tweets
     """
+
+    tokenizer = TweetTokenizer(preserve_case=False,
+                            strip_handles=True,
+                            reduce_len=True)
+
+    stemmer = PorterStemmer()
+
+    stopwords_english = stopwords.words("english")
+
+    punctuation = string.punctuation
+
     stemmed_tweet_list = list()
     for tweet in tweets:
         # cleaning the retweet words 'RT'
@@ -87,11 +88,12 @@ def create_vectors(frequencies, cleaned_positive_tweets, cleaned_negative_tweets
         cleaned_positive_tweets: list of cleaned positive tweets
         cleaned_negative_tweets: list of cleaned negative tweets
     Output:
-        data: list containing vectors
+        data: numpy array containing vectors
     """
     m = len(cleaned_positive_tweets) + len(cleaned_negative_tweets)
-    data = []
+    data = np.zeros((m,4))
     
+    i = 0 
     #generating the vectors for each tweet
     for tweet in cleaned_positive_tweets:
         positive_count = 0
@@ -99,7 +101,8 @@ def create_vectors(frequencies, cleaned_positive_tweets, cleaned_negative_tweets
         for word in tweet:
             positive_count += frequencies[(word,1)]
             negative_count += frequencies[(word,0)]
-        data.append([1,positive_count,negative_count,1])
+        data[i] = [1,positive_count,negative_count,1]
+        i += 1
     
     for tweet in cleaned_negative_tweets:
         positive_count = 0
@@ -107,9 +110,23 @@ def create_vectors(frequencies, cleaned_positive_tweets, cleaned_negative_tweets
         for word in tweet:
             positive_count += frequencies[(word,1)]
             negative_count += frequencies[(word,0)]
-        data.append([1,positive_count,negative_count,0])
-    
+        data[i] = [1,positive_count,negative_count,0]
+        i += 1
+
+    # un comment this block if you want to save the vectors as a csv file
+    # df = pd.DataFrame(data, columns=['bias','positive_frequency','negative_frequency','label'])
+    # df.to_csv("vectors.csv")
+
     return data
+
+def create_vector(frequencies, stemmed_tweet):
+    positive_count = 0
+    negative_count = 0
+    for word in stemmed_tweet:
+        positive_count += frequencies[(word,1)]
+        negative_count += frequencies[(word,0)]
+    vector = [1,positive_count,negative_count]
+    return np.array(vector)
 
 if __name__ == "__main__":
     all_positive_tweets = twitter_samples.strings("positive_tweets.json")
