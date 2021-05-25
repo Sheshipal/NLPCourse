@@ -73,7 +73,7 @@ def create_frequencies(cleaned_positive_tweets, cleaned_negative_tweets):
     for tweet in cleaned_positive_tweets:
         for word in tweet:
             frequencies[(word,1)] += 1
-    label = 0
+    
     for tweet in cleaned_negative_tweets:
         for word in tweet:
             frequencies[(word,0)] += 1
@@ -128,6 +128,53 @@ def create_vector(frequencies, stemmed_tweet):
     vector = [1,positive_count,negative_count]
     return np.array(vector)
 
+def derive_probabilities(frequencies):
+    """
+    Input:
+        frequencies: default dictionary containing frequency of words
+    Output:
+        probabilities: dictionary containing probabilities
+    """
+    # create word count for laplacian smoothing
+    words = { word for word,_ in frequencies.keys() }
+    word_count = len(words)
+ 
+    # calculate summation of total number of words in each group
+    pos_words = 0
+    neg_words = 0
+    for key,value in frequencies.items():
+        if key[-1] == 1.0:
+            pos_words += value
+        else:
+            neg_words += value
+
+    # compute probabilities of each word
+    probabilities = defaultdict()
+    for word in words:
+        key = (word,0.0)
+        value = frequencies[key]
+        probabilities[key] = (value + 1)/(neg_words + word_count)
+        key = (word,1.0)
+        value = frequencies[key]
+        probabilities[key] = (value + 1)/(pos_words + word_count)
+
+    return probabilities, words
+
+def create_loglihoods(probabilities, words):
+    """
+    Input:
+        probabilities: default dictionary of probabilities
+    Output:
+        loglihoods: default dictionary of loglihoods
+    """
+    loglihoods = defaultdict(lambda:0)
+
+    # find loglihood for every word in corpus
+    for word in words:
+        loglihoods[word] = np.log(probabilities[(word, 1.0)]/probabilities[(word, 0.0)])
+
+    return loglihoods
+    
 if __name__ == "__main__":
     all_positive_tweets = twitter_samples.strings("positive_tweets.json")
     all_negative_tweets = twitter_samples.strings("negative_tweets.json")

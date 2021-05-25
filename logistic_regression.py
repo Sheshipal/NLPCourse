@@ -36,7 +36,6 @@ def gradientDescent(x, y, theta, alpha, num_iters):
     features = len(x[0])
 
     for i in range(0, num_iters):
-        print(f"Iteration {i}")
         # get z, the dot product of x and theta
         z = np.dot(x,theta)
         assert(z.shape == (m,1))
